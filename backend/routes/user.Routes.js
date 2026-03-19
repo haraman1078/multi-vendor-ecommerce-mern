@@ -3,7 +3,19 @@ const router =express.Router();
 const User = require("../models/userModel")
 
 const { registerUser,loginUser } = require("../controllers/authController");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorizeRoles } = require("../middleware/authMiddleware");
+
+router.get("/admin", protect, authorizeRoles("admin"), (req, res) => {
+  res.send("Welcome Admin");
+});
+
+router.get("/vendor", protect, authorizeRoles("vendor"), (req, res) => {
+  res.send("Welcome Vendor");
+});
+
+router.get("/customer", protect, authorizeRoles("customer"), (req, res) => {
+  res.send("Welcome Customer");
+});
 
 router.get("/profile", protect, (req, res) => {
   res.json(req.user);
