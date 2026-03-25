@@ -62,6 +62,6 @@ Next: Product APIs & Multi-Vendor features.
 
 ---
 
-## 👨Author
+## Author
 
 Built as part of a B.Tech project focusing on real-world backend architecture.
