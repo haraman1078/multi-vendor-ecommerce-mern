@@ -1,5 +1,43 @@
 const Product = require("../models/productModel");
+const addReview = async (req, res) => {
+  const { rating, comment } = req.body;
 
+  const product = await Product.findById(req.params.id);
+
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  // check if user already reviewed
+  const alreadyReviewed = product.reviews.find(
+    (r) => r.user.toString() === req.user._id.toString()
+  );
+
+  if (alreadyReviewed) {
+    return res.status(400).json({
+      message: "Product already reviewed",
+    });
+  }
+
+  const review = {
+    user: req.user._id,
+    name: req.user.name,
+    rating: Number(rating),
+    comment,
+  };
+
+  product.reviews.push(review);
+
+  product.numReviews = product.reviews.length;
+
+  product.averageRating =
+    product.reviews.reduce((acc, item) => acc + item.rating, 0) /
+    product.reviews.length;
+
+  await product.save();
+
+  res.json({ message: "Review added" });
+};
 
 const createProduct = async (req, res) => {
   try {
@@ -11,7 +49,7 @@ const createProduct = async (req, res) => {
       price,
       category,
       stock,
-      image,
+      images: req.files ? req.files.map((file) => `/uploads/${file.filename}`) : [],
       vendor: req.user._id,
     });
 
@@ -28,8 +66,25 @@ const createProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate("vendor", "name email");
-    res.json(products);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+    const keyword = req.query.keyword
+      ? { name: { $regex: req.query.keyword, $options: "i" } }
+      : {};
+
+    const count = await Product.countDocuments({ ...keyword });
+
+    const products = await Product.find({ ...keyword })
+      .populate("vendor", "name email")
+      .limit(limit)
+      .skip(limit * (page - 1));
+
+    res.json({
+      products,
+      page,
+      pages: Math.ceil(count / limit),
+    });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -98,4 +153,5 @@ module.exports = {
   getMyProducts,
   updateProduct,
   deleteProduct,
+  addReview,
 };

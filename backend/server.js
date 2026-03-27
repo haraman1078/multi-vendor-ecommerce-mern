@@ -3,7 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const path = require("path");
-
+const vendorRoutes = require("./routes/vendorRoutes");
 
 
 // load env
@@ -22,7 +22,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // middleware
 app.use(cors());
 app.use(express.json());
-
+app.use("/api/vendors", vendorRoutes);
 
 
 const orderRoutes = require("./routes/orderRoutes");

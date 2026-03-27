@@ -8,6 +8,7 @@ const {
   getMyProducts,
   updateProduct,
   deleteProduct,
+  addReview
 } = require("../controllers/productController");
 
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
@@ -48,4 +49,10 @@ router.get("/my-products", protect, authorizeRoles("vendor"), getMyProducts);
 router.put("/:id", protect, authorizeRoles("vendor"), updateProduct);
 router.delete("/:id", protect, authorizeRoles("vendor"), deleteProduct);
 
+router.post(
+  "/:id/review",
+  protect,
+  authorizeRoles("customer"),
+  addReview
+);
 module.exports = router;
