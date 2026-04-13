@@ -8,36 +8,30 @@ const {
   getMyProducts,
   updateProduct,
   deleteProduct,
-  addReview
+  addReview,
+  getReviews,
+  getProductById,
 } = require("../controllers/productController");
 
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
-
 
 // ---------------- PUBLIC ----------------
 router.get("/", getProducts);
 
 // ---------------- VENDOR ----------------
 
-// ✅ Upload route FIRST
+// ✅ Upload route FIRST (before dynamic /:id routes)
 router.post(
   "/upload",
   protect,
   authorizeRoles("vendor"),
-  upload.array("images", 5), 
+  upload.array("images", 5),
   (req, res) => {
     if (!req.files) {
-      return res.status(400).json({
-        message: "No files uploaded",
-      });
+      return res.status(400).json({ message: "No files uploaded" });
     }
-
-    const filePaths = req.files.map(file => `/uploads/${file.filename}`);
-
-    res.json({
-      message: "Images uploaded",
-      filePaths,
-    });
+    const filePaths = req.files.map((file) => `/uploads/${file.filename}`);
+    res.json({ message: "Images uploaded", filePaths });
   }
 );
 
@@ -46,13 +40,12 @@ router.post("/", protect, authorizeRoles("vendor"), createProduct);
 router.get("/my-products", protect, authorizeRoles("vendor"), getMyProducts);
 
 // ❗ Dynamic routes ALWAYS at bottom
+router.get("/:id", getProductById);
 router.put("/:id", protect, authorizeRoles("vendor"), updateProduct);
 router.delete("/:id", protect, authorizeRoles("vendor"), deleteProduct);
 
-router.post(
-  "/:id/review",
-  protect,
-  authorizeRoles("customer"),
-  addReview
-);
+// ── Reviews (plural, matches frontend) ──────────────────────────────────────
+router.get("/:id/reviews", getReviews);                          // GET all reviews
+router.post("/:id/reviews", protect, authorizeRoles("customer"), addReview); // POST new review
+
 module.exports = router;

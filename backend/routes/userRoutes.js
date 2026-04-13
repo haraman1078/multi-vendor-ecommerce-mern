@@ -46,5 +46,19 @@ router.post("/test-user", async (req, res) => {
     });
   }
 });
+router.get(
+  "/all-users",
+  protect,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const User = require("../models/userModel");
+      const users = await User.find().select("-password").sort({ createdAt: -1 });
+      res.json(users);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  }
+)
 
 module.exports = router;
