@@ -234,7 +234,25 @@ const ProductDetailPage = () => {
 
           <div className="border-t border-b border-gray-100 py-3">
             <p className="text-3xl font-bold text-gray-900">₹{product.price}</p>
-            <p className="text-xs text-green-600 mt-1">Inclusive of all taxes</p>
+            <div className="flex items-center gap-3 mt-2">
+              <p className="text-xs text-green-600">Inclusive of all taxes</p>
+              {/* ✅ Stock indicator */}
+              {product.stock !== undefined && (
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
+                  product.stock > 10
+                    ? "bg-green-50 text-green-700 border-green-200"
+                    : product.stock > 0
+                    ? "bg-orange-50 text-orange-700 border-orange-200"
+                    : "bg-red-50 text-red-600 border-red-200"
+                }`}>
+                  {product.stock > 10
+                    ? "In Stock"
+                    : product.stock > 0
+                    ? `Only ${product.stock} left`
+                    : "Out of Stock"}
+                </span>
+              )}
+            </div>
           </div>
 
           {product.description && (
@@ -246,18 +264,23 @@ const ProductDetailPage = () => {
 
           <div className="flex gap-3 mt-2">
             <button onClick={handleAddToCart}
+              disabled={product.stock === 0}
               className={`px-8 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                addedToCart
+                product.stock === 0
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : addedToCart
                   ? "bg-green-500 text-white"
                   : "bg-yellow-400 hover:bg-yellow-500 text-gray-900"
               }`}>
-              {addedToCart ? "✓ Added!" : "Add to Cart"}
+              {product.stock === 0 ? "Out of Stock" : addedToCart ? "✓ Added!" : "Add to Cart"}
             </button>
-            <button onClick={() => { addToCart(product); navigate("/cart"); }}
-              className="px-8 py-2.5 rounded-lg text-sm font-medium bg-gray-900
-                         hover:bg-gray-700 text-white transition-colors">
-              Buy Now
-            </button>
+            {product.stock > 0 && (
+              <button onClick={() => { addToCart(product); navigate("/cart"); }}
+                className="px-8 py-2.5 rounded-lg text-sm font-medium bg-gray-900
+                           hover:bg-gray-700 text-white transition-colors">
+                Buy Now
+              </button>
+            )}
           </div>
         </div>
       </div>

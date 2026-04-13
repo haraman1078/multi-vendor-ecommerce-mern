@@ -13,13 +13,11 @@ const AddProductPage = () => {
   const [price, setPrice]             = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory]       = useState("Other");
+  const [stock, setStock]             = useState("");  // ✅ new
   const [images, setImages]           = useState([]);
   const [previews, setPreviews]       = useState([]);
   const [loading, setLoading]         = useState(false);
-
-  // ✅ AI description generator state
   const [aiLoading, setAiLoading]     = useState(false);
-
   const navigate = useNavigate();
 
   const imageChangeHandler = (e) => {
@@ -28,24 +26,17 @@ const AddProductPage = () => {
     setPreviews(files.map((f) => URL.createObjectURL(f)));
   };
 
-  // ✅ AI: generate description from product name + category + price
   const generateDescription = async () => {
-    if (!name.trim()) {
-      toast.error("Enter a product name first");
-      return;
-    }
+    if (!name.trim()) { toast.error("Enter a product name first"); return; }
     setAiLoading(true);
     try {
       const { data } = await API.post("/ai/generate-description", {
-        name,
-        category,
-        price,
+        name, category, price,
       });
       setDescription(data.description);
       toast.success("Description generated! ✨");
     } catch (err) {
       toast.error("AI unavailable. Write manually.");
-      console.error(err);
     } finally {
       setAiLoading(false);
     }
@@ -66,7 +57,11 @@ const AddProductPage = () => {
       }
 
       await toast.promise(
-        API.post("/products", { name, price, description, category, images: imagePaths }),
+        API.post("/products", {
+          name, price, description, category,
+          stock: Number(stock) || 0,   // ✅ include stock
+          images: imagePaths,
+        }),
         {
           loading: "Adding product...",
           success: "Product added successfully! 🎉",
@@ -103,19 +98,14 @@ const AddProductPage = () => {
                        focus:border-transparent transition" />
         </div>
 
-        {/* Description with AI button */}
+        {/* Description with AI */}
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="block text-sm font-medium text-gray-700">Description</label>
-            {/* ✅ AI Generate button */}
-            <button
-              type="button"
-              onClick={generateDescription}
-              disabled={aiLoading}
+            <button type="button" onClick={generateDescription} disabled={aiLoading}
               className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5
                          bg-purple-50 hover:bg-purple-100 text-purple-700 border
-                         border-purple-200 rounded-lg transition-colors disabled:opacity-60"
-            >
+                         border-purple-200 rounded-lg transition-colors disabled:opacity-60">
               {aiLoading ? (
                 <>
                   <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -126,24 +116,22 @@ const AddProductPage = () => {
                   </svg>
                   Generating...
                 </>
-              ) : (
-                <>✨ AI Generate</>
-              )}
+              ) : "✨ AI Generate"}
             </button>
           </div>
-          <textarea rows={4} placeholder="Describe your product, or click AI Generate above..."
+          <textarea rows={4} placeholder="Describe your product, or click AI Generate..."
             value={description} onChange={(e) => setDescription(e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
                        text-gray-800 placeholder-gray-400 resize-none
                        focus:outline-none focus:ring-2 focus:ring-yellow-400
                        focus:border-transparent transition" />
           <p className="text-xs text-gray-400 mt-1">
-            💡 Enter product name first, then click AI Generate for an instant description
+            💡 Enter product name first, then click AI Generate
           </p>
         </div>
 
-        {/* Price + Category */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Price + Category + Stock */}
+        <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Price (₹) <span className="text-red-400">*</span>
@@ -158,6 +146,7 @@ const AddProductPage = () => {
                            focus:border-transparent transition" />
             </div>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
             <select value={category} onChange={(e) => setCategory(e.target.value)}
@@ -167,6 +156,32 @@ const AddProductPage = () => {
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
+
+          {/* ✅ Stock field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Stock Qty <span className="text-red-400">*</span>
+            </label>
+            <input type="number" placeholder="0" value={stock}
+              onChange={(e) => setStock(e.target.value)} required min="0"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
+                         text-gray-800 placeholder-gray-400
+                         focus:outline-none focus:ring-2 focus:ring-yellow-400
+                         focus:border-transparent transition" />
+          </div>
+        </div>
+
+        {/* Stock hint */}
+        <div className="flex gap-4 text-xs text-gray-400 -mt-2">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-green-400" /> 11+ = In Stock
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-orange-400" /> 1–10 = Low Stock warning
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-red-400" /> 0 = Out of Stock
+          </span>
         </div>
 
         {/* Images */}

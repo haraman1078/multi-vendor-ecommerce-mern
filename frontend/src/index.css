@@ -1,3 +1,91 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+  WHY these base styles?
+  Tailwind's dark: prefix only works on elements that have explicit classes.
+  For things like default text color and background, we set them here at
+  the root level so dark mode works globally without adding dark: to every
+  single element in every component.
+*/
+
+@layer base {
+  body {
+    @apply bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200;
+  }
+
+  /* Cards and white surfaces */
+  .card {
+    @apply bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700;
+  }
+
+  /* Input fields */
+  input, textarea, select {
+    @apply dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400;
+  }
+}
+
+/*
+  DARK MODE OVERRIDES
+  These handle the components we can't easily add dark: classes to
+  because they were built with inline Tailwind strings.
+  The .dark class on <html> activates all of these.
+*/
+
+/* Page backgrounds */
+.dark .bg-white          { background-color: #1f2937 !important; } /* gray-800 */
+.dark .bg-gray-50        { background-color: #111827 !important; } /* gray-900 */
+.dark .bg-gray-100       { background-color: #111827 !important; }
+
+/* Borders */
+.dark .border-gray-100   { border-color: #374151 !important; } /* gray-700 */
+.dark .border-gray-200   { border-color: #374151 !important; }
+.dark .border-gray-300   { border-color: #4b5563 !important; } /* gray-600 */
+
+/* Text colors */
+.dark .text-gray-800     { color: #f3f4f6 !important; } /* gray-100 */
+.dark .text-gray-700     { color: #e5e7eb !important; } /* gray-200 */
+.dark .text-gray-600     { color: #d1d5db !important; } /* gray-300 */
+.dark .text-gray-500     { color: #9ca3af !important; } /* gray-400 */
+.dark .text-gray-400     { color: #6b7280 !important; } /* gray-500 */
+.dark .text-gray-900     { color: #f9fafb !important; } /* gray-50  */
+
+/* Dividers */
+.dark .divide-gray-100 > * + * { border-color: #374151 !important; }
+.dark .divide-gray-200 > * + * { border-color: #374151 !important; }
+
+/* Hover states */
+.dark .hover\:bg-gray-50:hover  { background-color: #1f2937 !important; }
+.dark .hover\:bg-gray-100:hover { background-color: #374151 !important; }
+
+/* Form inputs */
+.dark input:not([type="file"]),
+.dark textarea,
+.dark select {
+  background-color: #1f2937 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Skeleton loaders */
+.dark .bg-gray-200 { background-color: #374151 !important; }
+
+/* Stat cards — keep colored ones as-is, they look good in dark */
+.dark .bg-yellow-50  { background-color: rgba(234, 179, 8,  0.15) !important; }
+.dark .bg-green-50   { background-color: rgba(34,  197, 94, 0.15) !important; }
+.dark .bg-blue-50    { background-color: rgba(59,  130, 246,0.15) !important; }
+.dark .bg-purple-50  { background-color: rgba(168, 85,  247,0.15) !important; }
+.dark .bg-red-50     { background-color: rgba(239, 68,  68, 0.15) !important; }
+.dark .bg-orange-50  { background-color: rgba(249, 115, 22, 0.15) !important; }
+
+/* Toast notifications — keep white */
+.dark .react-hot-toast > div {
+  background-color: #1f2937 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Scrollbar */
+.dark ::-webkit-scrollbar-track { background: #111827; }
+.dark ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #4b5563; }

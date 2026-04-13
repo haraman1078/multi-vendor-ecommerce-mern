@@ -2,27 +2,16 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { getCart } from "../utils/cart";
 import toast from "react-hot-toast";
-
-/*
-  WHY mobile menu?
-  On small screens, all nav links squish together and overflow.
-  The solution: hide links on mobile, show a hamburger button (☰)
-  that toggles a dropdown menu. This is how every real app works.
-
-  HOW it works:
-  - `menuOpen` state controls whether mobile menu is visible
-  - Tailwind `md:flex` = only show on medium+ screens (desktop)
-  - Tailwind `md:hidden` = only show on small screens (mobile)
-  - Clicking any link closes the menu automatically
-*/
+import useDarkMode from "../hooks/useDarkMode";
 
 const Navbar = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { isDark, toggle } = useDarkMode(); // ✅ dark mode
 
-  const user = JSON.parse(localStorage.getItem("userInfo"));
-  const cartCount = getCart().reduce((sum, item) => sum + item.qty, 0);
+  const user       = JSON.parse(localStorage.getItem("userInfo"));
+  const cartCount  = getCart().reduce((sum, item) => sum + item.qty, 0);
 
   const logoutHandler = () => {
     localStorage.removeItem("userInfo");
@@ -32,9 +21,7 @@ const Navbar = () => {
   };
 
   const closeMenu = () => setMenuOpen(false);
-
-  // Active link helper — highlights current page link
-  const isActive = (path) => location.pathname === path;
+  const isActive  = (path) => location.pathname === path;
 
   const linkClass = (path) =>
     `text-sm px-3 py-1.5 rounded-lg transition-colors ${
@@ -43,15 +30,13 @@ const Navbar = () => {
         : "text-gray-300 hover:text-white hover:bg-white/10"
     }`;
 
-  // Links config — easier to manage and render consistently
-  // for both desktop and mobile menus
   const navLinks = [
-    { to: "/",       label: "Home",      show: true },
-    { to: "/orders", label: "Orders",    show: !!user },
-    { to: "/vendor-dashboard", label: "Dashboard",   show: user?.role === "vendor" },
-    { to: "/my-products",      label: "My Products", show: user?.role === "vendor" },
-    { to: "/add-product",      label: "+ Add",       show: user?.role === "vendor" },
-    { to: "/admin",            label: "Admin Panel", show: user?.role === "admin",  adminStyle: true },
+    { to: "/",                label: "Home",        show: true },
+    { to: "/orders",          label: "Orders",      show: !!user },
+    { to: "/vendor-dashboard",label: "Dashboard",   show: user?.role === "vendor" },
+    { to: "/my-products",     label: "My Products", show: user?.role === "vendor" },
+    { to: "/add-product",     label: "+ Add",       show: user?.role === "vendor" },
+    { to: "/admin",           label: "Admin Panel", show: user?.role === "admin", adminStyle: true },
   ].filter((l) => l.show);
 
   return (
@@ -64,9 +49,10 @@ const Navbar = () => {
           Shop<span className="text-yellow-400">Zone</span>
         </Link>
 
-        {/* Role badge — shows logged-in user's role */}
+        {/* Role badge */}
         {user && (
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide hidden sm:block ${
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full
+                            uppercase tracking-wide hidden sm:block ${
             user.role === "admin"  ? "bg-red-500/30 text-red-300" :
             user.role === "vendor" ? "bg-purple-500/30 text-purple-300" :
                                      "bg-blue-500/30 text-blue-300"
@@ -77,15 +63,13 @@ const Navbar = () => {
 
         <div className="flex-1" />
 
-        {/* ── DESKTOP NAV (hidden on mobile) ── */}
+        {/* ── DESKTOP NAV ── */}
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
             <Link key={link.to} to={link.to}
               className={link.adminStyle
-                ? `text-sm px-3 py-1.5 rounded-lg transition-colors text-red-300
-                   hover:text-white hover:bg-white/10`
-                : linkClass(link.to)
-              }>
+                ? "text-sm px-3 py-1.5 rounded-lg transition-colors text-red-300 hover:text-white hover:bg-white/10"
+                : linkClass(link.to)}>
               {link.label}
             </Link>
           ))}
@@ -93,8 +77,9 @@ const Navbar = () => {
           <div className="w-px h-5 bg-white/20 mx-1" />
 
           {/* Cart */}
-          <Link to="/cart" className="relative flex items-center gap-1.5 text-white
-                     hover:bg-white/10 text-sm px-3 py-1.5 rounded-lg transition-colors">
+          <Link to="/cart"
+            className="relative flex items-center gap-1.5 text-white
+                       hover:bg-white/10 text-sm px-3 py-1.5 rounded-lg transition-colors">
             <span className="relative">
               <svg className="w-5 h-5" fill="none" stroke="currentColor"
                 strokeWidth={1.5} viewBox="0 0 24 24">
@@ -111,6 +96,30 @@ const Navbar = () => {
             </span>
             Cart
           </Link>
+
+          <div className="w-px h-5 bg-white/20 mx-1" />
+
+          {/* ✅ Dark mode toggle */}
+          <button onClick={toggle}
+            className="p-1.5 rounded-lg text-gray-300 hover:text-white
+                       hover:bg-white/10 transition-colors"
+            title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
+            {isDark ? (
+              // Sun icon
+              <svg className="w-5 h-5" fill="none" stroke="currentColor"
+                strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+              </svg>
+            ) : (
+              // Moon icon
+              <svg className="w-5 h-5" fill="none" stroke="currentColor"
+                strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+              </svg>
+            )}
+          </button>
 
           <div className="w-px h-5 bg-white/20 mx-1" />
 
@@ -135,10 +144,29 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* ── MOBILE: Cart icon + Hamburger (shown only on mobile) ── */}
+        {/* ── MOBILE: icons + hamburger ── */}
         <div className="flex items-center gap-2 md:hidden">
 
-          {/* Cart icon on mobile */}
+          {/* Dark mode toggle mobile */}
+          <button onClick={toggle}
+            className="text-gray-300 hover:text-white p-1.5 rounded-lg
+                       hover:bg-white/10 transition-colors">
+            {isDark ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor"
+                strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor"
+                strokeWidth={1.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+              </svg>
+            )}
+          </button>
+
+          {/* Cart mobile */}
           <Link to="/cart" className="relative text-white p-1.5">
             <svg className="w-5 h-5" fill="none" stroke="currentColor"
               strokeWidth={1.5} viewBox="0 0 24 24">
@@ -154,20 +182,15 @@ const Navbar = () => {
             )}
           </Link>
 
-          {/* Hamburger button — toggles between ☰ and ✕ */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors"
-            aria-label="Toggle menu"
-          >
+          {/* Hamburger */}
+          <button onClick={() => setMenuOpen(!menuOpen)}
+            className="text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors">
             {menuOpen ? (
-              // ✕ close icon
               <svg className="w-5 h-5" fill="none" stroke="currentColor"
                 strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             ) : (
-              // ☰ hamburger icon
               <svg className="w-5 h-5" fill="none" stroke="currentColor"
                 strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round"
@@ -178,23 +201,15 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* ── MOBILE DROPDOWN MENU ── */}
-      {/*
-        Why this approach?
-        We render it conditionally with {menuOpen && ...}
-        When menuOpen is false, the DOM element doesn't exist at all.
-        This is simpler than CSS display:none for a beginner project.
-      */}
+      {/* ── MOBILE DROPDOWN ── */}
       {menuOpen && (
         <div className="md:hidden bg-[#1a2332] border-t border-white/10 px-4 py-3 space-y-1">
-
-          {/* User info strip */}
           {user && (
             <div className="flex items-center gap-2 px-3 py-2 mb-2
                             border-b border-white/10 pb-3">
               <div className="w-7 h-7 rounded-full bg-yellow-400 flex items-center
                               justify-center text-[#131921] text-xs font-bold">
-                {user.name?.slice(0, 1).toUpperCase()}
+                {user.name?.slice(0,1).toUpperCase()}
               </div>
               <div>
                 <p className="text-white text-sm font-medium">{user.name}</p>
@@ -203,7 +218,6 @@ const Navbar = () => {
             </div>
           )}
 
-          {/* All nav links */}
           {navLinks.map((link) => (
             <Link key={link.to} to={link.to} onClick={closeMenu}
               className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
